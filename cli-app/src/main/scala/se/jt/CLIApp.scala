@@ -10,6 +10,8 @@ trait CLIApp extends Logging {
 	
 	import Params._
 	
+	var quiet = false
+	
 	
 	def parseArgs(
 			name:String, 
@@ -69,7 +71,7 @@ trait CLIApp extends Logging {
 		}
 		parse(args.toList, reqOrder)
 		
-		if (errs.nonEmpty)
+		if (errs.nonEmpty && !quiet)
 			print(usage(name, version, args, params, reqOrder, rest))
 		errs
 	}
@@ -90,7 +92,7 @@ trait CLIApp extends Logging {
 		val maxNameLength = pus.map(_.name.length).max
 		val fString = "    %"+maxNameLength+"s %s\t%s"
 		val header = fString.format("param", "default", "description")
-		val opts = pus.sortBy(_.name).map(pu => fString.format(pu.name, pu.curr, pu.desc))
+		val opts = pus.sortBy(_.name).map(pu => fString.format(pu.name, pu.curr, pu.desc)).mkString("\n")
 		List(template, "OPTIONS:", header, opts).mkString("\n")
 	}
 	

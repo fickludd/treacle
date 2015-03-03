@@ -17,7 +17,7 @@ class CLIAppTest extends FunSuite {
 		val list = List[String]() ## "a list param for the remainder"
 	}
 	
-	class TestApp extends CLIApp {}
+	class TestApp extends CLIApp {quiet = true}
 	
 	test("basic") {
 		val p = new P2
