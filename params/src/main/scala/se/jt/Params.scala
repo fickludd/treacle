@@ -12,7 +12,8 @@ object Params {
 			name:String, 
 			desc:String, 
 			curr:Any, 
-			update:String => Unit
+			update:String => Unit,
+			innerType:String
 		)
 	
 	class Param[T](val default:Option[T], val desc:String) {
@@ -27,12 +28,14 @@ object Params {
 	case class Pouble(d:Double, 	override val desc:String) extends Param[Double](Some(d), desc)
 	case class Pring(s:String, 		override val desc:String) extends Param[String](Some(s), desc)
 	case class Poolean(b:Boolean, 	override val desc:String) extends Param[Boolean](Some(b), desc)
+	case class Plist(l:List[String], override val desc:String, sep:Char = ' ') extends Param[List[String]](Some(l), desc)
 	
 	case class ReqBoolean(	override val desc:String) extends Param[Boolean](None, desc)
 	case class ReqInt(		override val desc:String) extends Param[Int](None, desc)
 	case class ReqLong(		override val desc:String) extends Param[Long](None, desc)
 	case class ReqDouble(	override val desc:String) extends Param[Double](None, desc)
 	case class ReqString(	override val desc:String) extends Param[String](None, desc)
+	case class ReqList(		override val desc:String, sep:Char = ' ') extends Param[List[String]](None, desc)
 	/*
 	case class PoptionLong(override val desc:String) extends Param[Option[Long]](None, desc)
 	case class PoptionInt(override val desc:String) extends Param[Option[Int]](None, desc)
@@ -46,6 +49,7 @@ object Params {
 	implicit class PoubleWrapper(d:Double) 		{ def ##(desc:String) = Pouble(d, desc) }
 	implicit class PringWrapper(s:String) 		{ def ##(desc:String) = Pring(s, desc) }
 	implicit class PooleanWrapper(b:Boolean) 	{ def ##(desc:String) = Poolean(b, desc) }
+	implicit class PlistWrapper(l:Seq[String]) 	{ def ##(desc:String) = Plist(l.toList, desc) }
 	
 	
 	implicit def pbool2bool(p:Param[Boolean]) 		= p.value
@@ -53,6 +57,7 @@ object Params {
 	implicit def plong2long(p:Param[Long]) 			= p.value
 	implicit def pdouble2double(p:Param[Double]) 	= p.value
 	implicit def pstring2string(p:Param[String]) 	= p.value
+	implicit def plist2list(p:Param[List[String]]) 	= p.value
 	/*
 	implicit def poption2bool(p:Poption[Boolean]) = 
 		p.value.getOrElse { throw new ParamException("unintialized param") }
@@ -87,8 +92,8 @@ trait Params {
 		paramFields map (pf => {
 			
 			val m = c.getMethod(pf)
-			def fix[T](p:Param[T], up:String => Unit) = 
-				ParamUpdater(pf, p.desc, p._value, up)
+			def fix[T](p:Param[T], up:String => Unit)(implicit m: reflect.Manifest[T]) = 
+				ParamUpdater(pf, p.desc, p._value, up, m.toString)
 					
 			pf -> (m.invoke(this) match {
 				case p:Poolean => 	fix(p, str => p.value = str.toBoolean)
@@ -96,15 +101,19 @@ trait Params {
 				case p:Plong => 	fix(p, str => p.value = str.toLong)
 				case p:Pouble => 	fix(p, str => p.value = str.toDouble)
 				case p:Pring => 	fix(p, str => p.value = str)
+				case p:Plist => 	fix(p, str => p.value = str.split(p.sep).toList)
 				case p:ReqBoolean => 	fix(p, str => p.value = str.toBoolean)
 				case p:ReqInt => 		fix(p, str => p.value = str.toInt)
 				case p:ReqLong => 		fix(p, str => p.value = str.toLong)
 				case p:ReqDouble => 	fix(p, str => p.value = str.toDouble)
 				case p:ReqString => 	fix(p, str => p.value = str)
+				case p:ReqList => 		fix(p, str => p.value = str.split(p.sep).toList)
 				case _ => throw new Exception("method returning Param didn't return param... confused!")
 			})
 		}) toMap
 	}
 	
-	def desc:String = opts.values.map(pu => "%s\t%s".format(pu.name, pu.desc)).mkString("\n")
+	def desc:String = {
+		opts.values.map(pu => "%s\t%s".format(pu.name, pu.desc)).mkString("\n")
+	}
 }

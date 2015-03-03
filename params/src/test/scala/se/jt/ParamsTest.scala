@@ -49,19 +49,19 @@ class ParamsTest extends FunSuite {
 		val opts = p.opts
 		try {
 			opts("s") match {
-				case ParamUpdater(n, d, x, up) =>
+				case ParamUpdater(n, d, x, up, innerType) =>
 					up("hello!")
 					assert("hello!" === p.s.value)
 			}
 			
 			opts("flag") match {
-				case ParamUpdater(n, d, x, up) =>
+				case ParamUpdater(n, d, x, up, innerType) =>
 					up("false")
 					assert(!p.flag.value)
 			}
 			
 			opts("num") match {
-				case ParamUpdater(n, d, x, up) =>
+				case ParamUpdater(n, d, x, up, innerType) =>
 					up("42")
 					assert(42 === p.num.value)
 			}
