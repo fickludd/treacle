@@ -82,6 +82,7 @@ trait Params {
 	private def isParam(c:java.lang.Class[_]):Boolean =
 		if 		(c == classOf[AnyRef]) 		false
 		else if (c == classOf[Param[_]]) 	true
+		else if (c.getSuperclass == null)	false
 		else 								isParam(c.getSuperclass)
 	
 	def opts:Map[String, ParamUpdater] = {
