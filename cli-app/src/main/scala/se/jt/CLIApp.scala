@@ -91,7 +91,7 @@ trait CLIApp extends Logging {
 		val pus = params.opts.values.toSeq
 		val maxNameLength = pus.map(_.name.length).max
 		val fString = "    %"+maxNameLength+"s %s\t%s"
-		val header = fString.format("param", "default", "description")
+		val header = fString.format("PARAMETER", "DEFAULT", "DESCRIPTION")
 		val opts = pus.sortBy(_.name).map(pu => fString.format(pu.name, pu.curr, pu.desc)).mkString("\n")
 		List(template, "OPTIONS:", header, opts).mkString("\n")
 	}
