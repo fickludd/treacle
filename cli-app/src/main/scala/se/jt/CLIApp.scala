@@ -12,19 +12,13 @@ trait CLIApp extends Logging {
 	
 	
 	def parseArgs(
-			applicationName:String, 
+			name:String, 
+			version:String,
 			args:Array[String], 
 			params:Params, 
 			reqOrder:List[String], 
 			rest:Option[String]
 	):Seq[String] = {
-		/*args.find(a => a.startsWith("--log-dir=")) match {
-			case Some(a) => logDir = a.dropWhile(_ != '=').tail.toString
-			case None => {}
-		}*/
-		
-		this.applicationName = applicationName
-		this.args = args
 		
 		val opts = params.opts
 		
@@ -34,7 +28,10 @@ trait CLIApp extends Logging {
 		}
 		
 		val errs = new Queue[String]()
-		def setError(msg:String) = errs += msg
+		def setError(msg:String) = {
+			errs += msg
+			error(msg)
+		}
 		
 		def parse(args:List[String], reqs:List[String]):Unit = {
 			args match {
@@ -72,7 +69,29 @@ trait CLIApp extends Logging {
 		}
 		parse(args.toList, reqOrder)
 		
+		if (errs.nonEmpty)
+			print(usage(name, version, args, params, reqOrder, rest))
 		errs
+	}
+	
+	
+	def usage(
+			name:String,
+			version:String,
+			args:Array[String], 
+			params:Params, 
+			reqOrder:List[String], 
+			rest:Option[String]
+	) = {
+		val template = 
+			"usage:\n> java -jar "+name+"-"+version+".jar [OPTIONS] "+reqOrder.mkString(" ") +
+				rest.map(_ + "+").getOrElse("")
+		val pus = params.opts.values.toSeq
+		val maxNameLength = pus.map(_.name.length).max
+		val fString = "    %"+maxNameLength+"s %s\t%s"
+		val header = fString.format("param", "default", "description")
+		val opts = pus.sortBy(_.name).map(pu => fString.format(pu.name, pu.curr, pu.desc))
+		List(template, "OPTIONS:", header, opts).mkString("\n")
 	}
 	
 }
