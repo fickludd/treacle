@@ -85,14 +85,26 @@ trait CLIApp extends Logging {
 			reqOrder:List[String], 
 			rest:Option[String]
 	) = {
+		def currToString(c:Any) =
+			c match {
+			case Some(a) => a.toString
+			case None => "-"
+			case x => x.toString
+			}
 		val template = 
 			"usage:\n> java -jar "+name+"-"+version+".jar [OPTIONS] "+reqOrder.mkString(" ") +
 				rest.map(_ + "+").getOrElse("")
 		val pus = params.opts.values.toSeq
 		val maxNameLength = pus.map(_.name.length).max
+		val maxDefLength = pus.map(pu => currToString(pu.curr).length).max
 		val fString = "    %"+maxNameLength+"s %s\t%s"
-		val header = fString.format("PARAMETER", "DEFAULT", "DESCRIPTION")
-		val opts = pus.sortBy(_.name).map(pu => fString.format(pu.name, pu.curr, pu.desc)).mkString("\n")
+		val header = fString.format("PARAMETER", "DEFAULT".padTo(maxDefLength, " "), "DESCRIPTION")
+		val opts = pus.sortBy(_.name).map(pu => 
+						fString.format(
+								pu.name, 
+								currToString(pu.curr).padTo(maxDefLength, " "), 
+								pu.desc
+						)).mkString("\n")
 		List(template, "OPTIONS:", header, opts).mkString("\n")
 	}
 	
