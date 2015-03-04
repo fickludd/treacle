@@ -108,4 +108,20 @@ trait CLIApp extends Logging {
 		List(template, "OPTIONS:", header, opts).mkString("\n")
 	}
 	
+	
+	def niceTiming(t:Long):String = {
+		
+		val ms = t % 1000
+		var x = t / 1000
+		val s = x % 60
+		x = x / 60
+		val m = x & 60
+		x = x / 60
+		val h = x % 24
+		val d = x / 24
+		val str = "%d days %02d:%02d:%02d.%03d".format(d, h, m, s, ms)
+		val init = str.takeWhile(c => !c.isDigit || c == '0')
+		init.replace('0', '_') + str.drop(init.length)
+	}
+	
 }
