@@ -32,7 +32,6 @@ trait CLIApp extends Logging {
 		val errs = new Queue[String]()
 		def setError(msg:String) = {
 			errs += msg
-			error(msg)
 		}
 		
 		def parse(args:List[String], reqs:List[String]):Unit = {
@@ -92,17 +91,17 @@ trait CLIApp extends Logging {
 			case x => x.toString
 			}
 		val template = 
-			"usage:\n> java -jar "+name+"-"+version+".jar [OPTIONS] "+reqOrder.mkString(" ") +
+			"usage:\n> java -jar "+name+"-"+version+".jar [OPTIONS] "+reqOrder.mkString(" ") + " " +
 				rest.map(_ + "+").getOrElse("")
 		val pus = params.opts.values.toSeq
 		val maxNameLength = pus.map(_.name.length).max
-		val maxDefLength = pus.map(pu => currToString(pu.curr).length).max
+		val maxDefLength = math.max(40, pus.map(pu => currToString(pu.curr).length).max)
 		val fString = "    %"+maxNameLength+"s %s\t%s"
-		val header = fString.format("PARAMETER", "DEFAULT".padTo(maxDefLength, " "), "DESCRIPTION")
+		val header = fString.format("PARAMETER", "DEFAULT".padTo(maxDefLength, " ").mkString, "DESCRIPTION")
 		val opts = pus.sortBy(_.name).map(pu => 
 						fString.format(
 								pu.name, 
-								currToString(pu.curr).padTo(maxDefLength, " "), 
+								currToString(pu.curr).padTo(maxDefLength, " ").mkString, 
 								pu.desc
 						)).mkString("\n")
 		List(template, "OPTIONS:", header, opts).mkString("\n")
@@ -115,7 +114,7 @@ trait CLIApp extends Logging {
 		var x = t / 1000
 		val s = x % 60
 		x = x / 60
-		val m = x & 60
+		val m = x % 60
 		x = x / 60
 		val h = x % 24
 		val d = x / 24
@@ -123,5 +122,15 @@ trait CLIApp extends Logging {
 		val init = str.takeWhile(c => !c.isDigit || c == '0')
 		init.replace('0', '_') + str.drop(init.length)
 	}
+	
+	
+	def failOnError(errs:Seq[String]) = 
+		if (errs.nonEmpty) {
+			println
+			println
+			for (err <- errs)
+				println(err)
+			System.exit(1)		
+		}
 	
 }
