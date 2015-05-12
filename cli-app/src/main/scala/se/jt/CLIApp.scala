@@ -2,6 +2,8 @@ package se.jt
 
 import grizzled.slf4j.Logging
 import collection.mutable.Queue
+import java.io.File
+import scala.io.Source
 
 trait CLIApp extends Logging {
 
@@ -12,6 +14,13 @@ trait CLIApp extends Logging {
 	
 	var quiet = false
 	
+		
+	def stripParam(p:String) = stripKeyVal(p.drop(2))
+	
+	def stripKeyVal(kv:String) = {
+		val t = kv.split("=", 2).map(_.trim)
+		(t(0), if (t.length == 2) Some(t(1)) else None)
+	}
 	
 	def parseArgs(
 			name:String, 
@@ -23,11 +32,6 @@ trait CLIApp extends Logging {
 	):Seq[String] = {
 		
 		val opts = params.opts
-		
-		def stripParam(p:String) = {
-			val t = p.drop(2).split("=", 2)
-			(t(0), if (t.length == 2) Some(t(1)) else None)
-		}
 		
 		val errs = new Queue[String]()
 		def setError(msg:String) = {
@@ -76,6 +80,38 @@ trait CLIApp extends Logging {
 	}
 	
 	
+	
+	def parseParams(
+			params:Params, 
+			path:String
+	):Seq[String] = {
+		val f = new File(path)
+		val opts = params.opts
+		val errs = new Queue[String]()
+		def setError(msg:String) = {
+			errs += msg
+		}
+		
+		if (f.exists) {
+			for (line <- Source.fromFile(f).getLines) {
+				val (param, value) = stripKeyVal(line)
+				opts.get(param) match {
+					case Some(pu) =>
+						value match {
+							case Some(v) =>
+								pu.update(v)
+							case None =>
+								pu.update("true")
+						}
+					case None =>
+						setError("Error parsing '%s'. Option does not exist.".format(param))
+				}
+			}
+		}
+		errs
+	}
+	
+	
 	def usage(
 			name:String,
 			version:String,
@@ -95,7 +131,7 @@ trait CLIApp extends Logging {
 				rest.map(_ + "+").getOrElse("")
 		val pus = params.opts.values.toSeq
 		val maxNameLength = pus.map(_.name.length).max
-		val maxDefLength = math.max(40, pus.map(pu => currToString(pu.curr).length).max)
+		val maxDefLength = math.max(16, pus.map(pu => currToString(pu.curr).length).max)
 		val fString = "    %"+maxNameLength+"s %s\t%s"
 		val header = fString.format("PARAMETER", "DEFAULT".padTo(maxDefLength, " ").mkString, "DESCRIPTION")
 		val opts = pus.sortBy(_.name).map(pu => 
