@@ -40,6 +40,11 @@ trait GetScale[T] {
 	def apply(data:Seq[T]):Scale[T]
 }
 
+trait GetMultiScale[T] {
+	def apply():Seq[Scale[T]]
+	def apply(data:Seq[T]):Seq[Scale[T]]
+}
+
 
 object Scale {
 	
@@ -209,9 +214,32 @@ object Scale {
 		def categorical = scale.categorical
 	}
 	
+	class TwinWrapper[D, T](f:D => T, f2:D => T, scale:Scale[T]) extends Scale[D] {
+		type Self = TwinWrapper[D, T]
+		
+		override def setup(data:Seq[D]) = {
+			scale.setup(data.map(f) ++ data.map(f2))
+			this
+		}
+		def apply(d:D, i:Int):Double = scale(f(d), i)
+		def ticks = scale.ticks
+		def categorical = scale.categorical
+	}
+	
 	class GetWrapper[D, T](f:D => T, getScale:GetScale[T]) extends GetScale[D] {
 		def apply() = new Wrapper(f, getScale())
-		def apply(data:Seq[D]) = new Wrapper(f, getScale()).setup(data)
+		def apply(data:Seq[D]) = this().setup(data)
+	}
+	
+	class GetMultiWrapper[D, T](fs:Seq[D => T], getScale:GetScale[T]) extends GetMultiScale[D] {
+		def apply() = {
+			val underlyingScale = getScale()
+			fs.map(f => new Wrapper(f, underlyingScale))
+		}
+		def apply(data:Seq[D]) = {
+			val underlyingScale = getScale(fs.flatMap(data.map(_)))
+			fs.map(f => new Wrapper(f, underlyingScale))
+		}
 	}
 	
 	implicit val doubleScale = 

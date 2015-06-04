@@ -12,13 +12,13 @@ object Visdome extends SimpleSwingApplication {
 	
 	import Scale._
 	import Stratifier._
-	case class Data(t:Double, position:Double, group:String)
+	case class Data(t:Double, t2:Double, position:Double, pos2:Double, group:String)
 	case class Point(x:Int, y:Double)
 	
 	val ts = (0 until 100).map(_ / 10.0)
-	val y1 = ts.map(t => Data(t, math.sin(t), "y1"))
-	val y2 = ts.map(t => Data(t, math.sin(2 * t), "y2"))
-	val y3 = ts.map(t => Data(t, math.sin(1+t), "y3"))
+	val y1 = ts.map(t => Data(t, t+0.1, math.sin(t), math.sin(t)+0.1, "y1"))
+	val y2 = ts.map(t => Data(t, t+0.15, math.sin(2 * t), math.sin(2 * t)+0.05, "y2"))
+	val y3 = ts.map(t => Data(t, t+0.05, math.sin(1+t), math.sin(1+t)+0.05, "y3"))
 	
 	val data = y1 ++ y2 ++ y3
 	
@@ -27,6 +27,33 @@ object Visdome extends SimpleSwingApplication {
 	val SIZE = new java.awt.Dimension(1000, 1000)
 	
 	case class Marker[D, X, Y](ctrl:PlotControl[D, X, Y], px:Int, py:Int)
+	
+	
+	
+	object RectPlotComp extends Component {
+		
+		preferredSize = SIZE
+		
+		val plot = new RectPlot(data).x(_.t, _.t2).y(_.position, _.pos2).color(_.group)
+		
+		override def paintComponent(g: Graphics2D) = {
+			super.paintComponent(g)
+			plot.render(g, Geom.Rect(0, 0, size.width, size.height))
+		}
+	}
+	
+	object OverlayComp extends Component {
+		
+		preferredSize = SIZE
+		
+		val plot = new RectPlot(data).x(_.t, _.t2).y(_.position, _.pos2).color(_.group)
+		plot.overlays += new LinePlot(data).x(_.t).y(_.position).color(_.group)
+		
+		override def paintComponent(g: Graphics2D) = {
+			super.paintComponent(g)
+			plot.render(g, Geom.Rect(0, 0, size.width, size.height))
+		}
+	}
 	
 	object LinePlotComp extends Component {
 		
@@ -166,6 +193,8 @@ object Visdome extends SimpleSwingApplication {
 	def top = new MainFrame {
 		title = "Hello Visdome!"
 		contents = new TabbedPane {
+			pages += new TabbedPane.Page("Overlay", OverlayComp)
+			pages += new TabbedPane.Page("Rect", RectPlotComp)
 			pages += new TabbedPane.Page("Line", LinePlotComp)
 			pages += new TabbedPane.Page("Scatter", ScatterPlotComp)
 			pages += new TabbedPane.Page("FacetWrap", FacetWrapComp)

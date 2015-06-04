@@ -22,6 +22,26 @@ object VisualDimension {
 		}
 	}
 
+	trait X2Dim[D, X, Y, I] extends Plot[D, X, Y, I] {
+		var xScale:Option[GetMultiScale[D]] = None
+		var xStratifier:Option[Stratifier[D]] = None
+		def x[T](f:D => T, f2:D => T)(implicit g:GetScale[T], s:Stratifier[T]):Self = {
+			xScale = Some(new Scale.GetMultiWrapper(List(f, f2), g))
+			xStratifier = Some(new Stratifier.MultiWrapper(List(f, f2), s))
+			self
+		}
+	}
+
+	trait Y2Dim[D, X, Y, I] extends Plot[D, X, Y, I] {
+		var yScale:Option[GetMultiScale[D]] = None
+		var yStratifier:Option[Stratifier[D]] = None
+		def y[T](f:D => T, f2:D => T)(implicit g:GetScale[T], s:Stratifier[T]):Self = {
+			yScale = Some(new Scale.GetMultiWrapper(List(f, f2), g))
+			yStratifier = Some(new Stratifier.MultiWrapper(List(f, f2), s))
+			self
+		}
+	}
+
 	trait ColorDim[D, X, Y, I] extends Plot[D, X, Y, I] {
 		var colorScale:Option[Scale[D]] = None
 		var colorSpace:ColorSpace = _

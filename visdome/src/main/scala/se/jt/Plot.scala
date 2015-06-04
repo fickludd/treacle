@@ -51,6 +51,10 @@ trait Plot[Datum, X, Y, Interrim] {
 	
 	val filters = new Stack[(Datum, Int) => Boolean]
 	
+	val overlays = new ArrayBuffer[Plot[Datum, X, Y, _]]
+	
+	var hideLegends = false
+	
 	protected var facetA:Option[Stratifier[Datum]] = None
 	var facetScaleType:FacetScaleType = FreeScales
 	def facetWrap[T](
@@ -65,7 +69,17 @@ trait Plot[Datum, X, Y, Interrim] {
 	}
 	
 	def data:Seq[Datum]
-	def checkAndSetup(data:Seq[Datum]):(Scale[X], Scale[Y], Interrim) 
+	def checkAndSetup(data:Seq[Datum]):(Scale[X], Scale[Y], Interrim)
+	def checkSetupAndRenderData(
+			g:Graphics2D,
+			r:Rect,
+			baseData:Seq[Datum],
+			xScale:Scale[X], 
+			yScale:Scale[Y]
+	):Unit = {
+		val (_, _, interrim) = checkAndSetup(if (data.nonEmpty) data else baseData)
+		renderData(g, r, xScale, yScale, interrim)
+	}
 	def renderData(
 			g:Graphics2D, 
 			r:Rect, 
@@ -94,13 +108,16 @@ trait Plot[Datum, X, Y, Interrim] {
 					val facetAGroups = stratA(filtered)
 					for (
 						i <- 0 until facetAGroups.length
-					) yield checkAndSetup(selectData(filtered, facetAGroups, i))
+					) yield {
+						val subData = selectData(filtered, facetAGroups, i)
+						(subData, checkAndSetup(subData))
+					}
 					
 				case None =>
-					List(checkAndSetup(filtered))
+					List((filtered, checkAndSetup(filtered)))
 			}
 		
-		val lSizes = legends.map(_.size(g))
+		val lSizes = if (hideLegends) Nil else legends.map(_.size(g))
 		val lw = if (lSizes.isEmpty) 0 else lSizes.map(_._1).max
 		val plotsRect = Rect(r.x, r.y, r.w-lw, r.h)
 		val subPlotRects = plotsRect.niceSplit(subPlots.length)
@@ -109,8 +126,8 @@ trait Plot[Datum, X, Y, Interrim] {
 			facetScaleType match {
 				case FreeScales =>
 					for (i <- 0 until subPlots.length) yield {
-						val (_xScale, _yScale, interrim) = subPlots(i)
-						val plotRect = renderPlotAxis(g, subPlotRects(i), _xScale, _yScale, interrim, conf)
+						val (subData, (_xScale, _yScale, interrim)) = subPlots(i)
+						val plotRect = renderPlotAxis(g, subPlotRects(i), _xScale, _yScale, interrim, subData, conf)
 						new PlotControl[Datum, X, Y](plotRect, _xScale, _yScale)
 					}
 			}
@@ -130,6 +147,7 @@ trait Plot[Datum, X, Y, Interrim] {
 			_xScale:Scale[X], 
 			_yScale:Scale[Y], 
 			interrim:Interrim,
+			data:Seq[Datum],
 			conf:Conf
 	):Rect = {
 		val xah = if (conf.xScale) PlotCue.xAxisHeight(g, _xScale) else 0 
@@ -156,6 +174,10 @@ trait Plot[Datum, X, Y, Interrim] {
 		
 				
 		renderData(g, plotRect, _xScale, _yScale, interrim)
+		
+		for (layer <- overlays) 
+			layer.checkSetupAndRenderData(g, plotRect, data, _xScale, _yScale)
+		
 		plotRect
 	}
 	

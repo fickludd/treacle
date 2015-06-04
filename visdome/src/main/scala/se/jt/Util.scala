@@ -6,6 +6,9 @@ import scala.util.Random
 import java.awt.image.BufferedImage
 
 object Util {
+	
+	case class ImgControl[D, X, Y](img:BufferedImage, control:PlotsControl[D, X, Y])
+	
 	def split[T, G](x:Iterable[T], g:Iterable[G]):Map[G, Iterable[T]] = {
 		val keys = g.toSet
 		(for (key <- keys) yield (
@@ -63,10 +66,10 @@ object Util {
 		val img = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB)
 		
 		val g = img.createGraphics
-		plot.render(g, Geom.Rect(0,0,w,h))
+		val plotsControl = plot.render(g, Geom.Rect(0,0,w,h))
 		g.dispose
 		
-		img
+		ImgControl(img, plotsControl)
 	}
 	
 	

@@ -13,6 +13,14 @@ object Stratifier {
 			strat(data.map(f))
 	}
 	
+	class MultiWrapper[D, T](
+			fs:Seq[D => T],
+			strat:Stratifier[T]
+	) extends Stratifier[D] {
+		def apply(data:Seq[D]):Stratification =
+			strat(fs.flatMap(data.map(_)))
+	}
+	
 	class DoubleNStratifier(val n:Option[Int] = None) extends Stratifier[Double] {
 		def apply(data:Seq[Double]) = {
 			val min = data.min
