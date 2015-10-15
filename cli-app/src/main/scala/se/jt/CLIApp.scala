@@ -70,6 +70,10 @@ trait CLIApp extends Logging {
 				case Nil =>
 					if (reqs.nonEmpty)
 						setError("Not enough arguments!")
+					rest.foreach(x =>
+						if (opts(x).curr.isEmpty)
+							setError("Not enough arguments!")
+					)
 			}
 		}
 		parse(args.toList, reqOrder)
@@ -122,13 +126,14 @@ trait CLIApp extends Logging {
 	) = {
 		def currToString(c:Any) =
 			c match {
-			case Some(a) => a.toString
-			case None => "-"
-			case x => x.toString
+				case Some(a) => a.toString
+				case None => "-"
+				case x => x.toString
 			}
 		val template = 
-			"usage:\n> java -jar "+name+"-"+version+".jar [OPTIONS] "+reqOrder.mkString(" ") + " " +
-				rest.map(_ + "+").getOrElse("")
+			"usage:\n> java -jar "+name+"-"+version+".jar [OPTIONS]" +
+				reqOrder.map(" "+_).mkString + 
+				rest.map(" " + _ + "+").getOrElse("")
 		val pus = params.opts.values.toSeq
 		val maxNameLength = pus.map(_.name.length).max
 		val maxDefLength = math.max(16, pus.map(pu => currToString(pu.curr).length).max)

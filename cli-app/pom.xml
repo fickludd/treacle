@@ -4,7 +4,7 @@
 
 	<groupId>se.jt</groupId>
 	<artifactId>CLIApp</artifactId>
-	<version>1.1.0</version>
+	<version>1.2.0</version>
 	<packaging>jar</packaging>
 
 	<properties>
@@ -48,7 +48,7 @@
 		<dependency>
 			<groupId>se.jt</groupId>
 			<artifactId>Params</artifactId>
-			<version>1.0.0</version>
+			<version>1.2.0</version>
 		</dependency>
 		<dependency>
 			<groupId>org.slf4j</groupId>
