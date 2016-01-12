@@ -16,9 +16,9 @@ object Visdome extends SimpleSwingApplication {
 	case class Point(x:Int, y:Double)
 	
 	val ts = (0 until 100).map(_ / 10.0)
-	val y1 = ts.map(t => Data(t, t+0.1, math.sin(t), math.sin(t)+0.1, "y1"))
-	val y2 = ts.map(t => Data(t, t+0.15, math.sin(2 * t), math.sin(2 * t)+0.05, "y2"))
-	val y3 = ts.map(t => Data(t, t+0.05, math.sin(1+t), math.sin(1+t)+0.05, "y3"))
+	val y1 = ts.take(91).map(t => Data(t, t+0.1, math.sin(t)*1.3, math.sin(t)*1.3+0.1, "y1"))
+	val y2 = ts.take(99).map(t => Data(t, t+0.15, math.sin(2 * t), math.sin(2 * t)+0.05, "y2"))
+	val y3 = ts.take(86).map(t => Data(t, t+0.05, math.sin(1+t)*0.94, math.sin(1+t)*0.94+0.05, "y3"))
 	
 	val data = y1 ++ y2 ++ y3
 	
@@ -190,6 +190,18 @@ object Visdome extends SimpleSwingApplication {
 		}
 	}
 	
+	object BubbleChartComp extends Component {
+		
+		preferredSize = SIZE
+		
+		val plot = ???
+		
+		override def paintComponent(g: Graphics2D) = {
+			super.paintComponent(g)
+			// FILL ME IN
+		}
+	}
+	
 	def top = new MainFrame {
 		title = "Hello Visdome!"
 		contents = new TabbedPane {
@@ -202,6 +214,7 @@ object Visdome extends SimpleSwingApplication {
 			pages += new TabbedPane.Page("Log10", Log10ScatterPlotComp)
 			pages += new TabbedPane.Page("Histogram2", Histogram2Comp)
 			pages += new TabbedPane.Page("Heatmap", HeatMapComp)
+			pages += new TabbedPane.Page("BubbleChart", BubbleChartComp)
 		}
 	}
 }

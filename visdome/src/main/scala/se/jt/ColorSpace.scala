@@ -45,8 +45,8 @@ class GradientColorSpace(
 object ColorBrewer {
 	val Set1 = new CategoricalColorSpace(Array(
 				new Color(0xe41a1c), new Color(0x377eb8), new Color(0x4daf4a), 
-				new Color(0x984ea3), new Color(0xff7f00), new Color(0xffff33), 
-				new Color(0xf781bf), new Color(0xa65628), new Color(0x999999)))
+				new Color(0x984ea3), new Color(0xff7f00), new Color(0x999999), 
+				new Color(0xf781bf), new Color(0xffff33), new Color(0xa65628)))
 	
 	
 	val BrBG = new GradientColorSpace(

@@ -31,12 +31,11 @@ class PlotControl[D, X, Y](
 	}
 
 	def zoomYFilter(py1:Int, py2:Int):(Y, Int) => Boolean = {
-		val y1 = Util.scale(confineY(py1), plotRect.y, plotRect.y + plotRect.h)
-		val y2 = Util.scale(confineY(py2), plotRect.y, plotRect.y + plotRect.h)
+		val y1 = 1 - Util.scale(confineY(py1), plotRect.y, plotRect.y + plotRect.h)
+		val y2 = 1 - Util.scale(confineY(py2), plotRect.y, plotRect.y + plotRect.h)
 		val b1 = yScale.border(y1)
 		val b2 = yScale.border(y2)
 		(d, i) => 
 			b1(d, i) != b2(d, i)
-		
 	}
 }
