@@ -5,6 +5,8 @@ import org.scalatest.FunSuite
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 
+import java.io.File
+
 @RunWith(classOf[JUnitRunner])
 class ParamsTest extends FunSuite {
 
