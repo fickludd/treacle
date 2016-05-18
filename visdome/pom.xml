@@ -3,8 +3,8 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>se.johanteleman</groupId>
-	<artifactId>Params</artifactId>
-	<version>1.2.0</version>
+	<artifactId>Visdome</artifactId>
+	<version>1.0.1</version>
 	<packaging>jar</packaging>
 
 	<properties>
@@ -37,6 +37,11 @@
 		<dependency>
 			<groupId>org.scala-lang</groupId>
 			<artifactId>scala-library</artifactId>
+			<version>${scala.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.scala-lang</groupId>
+			<artifactId>scala-swing</artifactId>
 			<version>${scala.version}</version>
 		</dependency>
 		<dependency>
